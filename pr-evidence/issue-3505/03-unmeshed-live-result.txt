@@ -1,0 +1,16 @@
+Issue 3505 live smoke test | 2026-11-14T18:34:18.538Z
+Target label: Unmeshed (host and user omitted from this report)
+Topology: Windows localhost TLS WebSocket -> patched production handlers -> live IBM i JDBC
+Java: Temurin 1.8.0_512 | JTOpen: 21.0.7 | mapepire-js: 1.0.1
+JDBC secure=false | Local TLS certificate validated
+SystemConnection.class SHA256: 1971A598FA32C3B38BFE9C475BBA8199B66802FAF6185A2DDD33FB0DE2CFE3BD
+Patch SHA256: 50D6E5B5CE4D126A6A45414DA0D25EAD1AA3ACCA4DC8F020836D7824587359E0
+SQL: SELECT 1 AS TEST_VALUE FROM SYSIBM.SYSDUMMY1
+PASS: initial WebSocket/JDBC authentication
+PASS: initial query returned TEST_VALUE=1
+PASS: JDBC reconnect and query returned TEST_VALUE=1
+PASS: connection-string trace present, with no user/password URL fields or literal password
+PASS: fresh WebSocket authentication and query returned TEST_VALUE=1
+Password case: ordinary credential smoke test; live double-quote regression remains untested.
+PASS: LIVE SMOKE TEST COMPLETE
+Scope: Windows test launcher; IBM i daemon startup, native/CLI and Kerberos paths not exercised.

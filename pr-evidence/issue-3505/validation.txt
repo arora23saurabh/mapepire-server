@@ -1,0 +1,65 @@
+Mapepire JDBC credential fix: validation record, 2026-11-14
+==========================================================
+
+Source base: Mapepire-IBMi/mapepire-server, commit
+57b6f2484635f8ab4cc02b8317d6d816e025b478.
+
+Patch SHA-256:
+50d6e5b5ce4d126a6a45414da0d25ead1aa3acca4dc8f020836d7824587359e0
+Deployed mapepire-test.jar SHA-256:
+f582835beeda528c645342bbb68c54b1f8b50eb8a9e65c24555e0e3a2390593c
+Patched SystemConnection.class SHA-256, unchanged in final rebuild:
+1971a598fa32c3b38bfe9c475bba8199b66802faf6185a2ddd33fb0de2cfe3bd
+
+Final submission review
+-----------------------
+- Patch applies cleanly to the current upstream commit above.
+- All 8 changed files match the previously tested checkout byte-for-byte.
+- No blocking source-code issue found in review of credential validation,
+  Toolbox/native selection, connection ownership, and unchanged Kerberos branch.
+- Existing CRLF in the XML build file is preserved; diff whitespace checks
+  use Git's cr-at-eol setting. Java files pass LF/tab/320-character checks.
+- Fresh mvn -B clean package on Temurin JDK 8 1.8.0_512, Maven 3.9.9, Windows:
+  9 tests, 0 failures, 0 errors, 0 skipped; BUILD SUCCESS.
+- Unpatched regression baseline on JDK 25: 6 assertion failures and 3 parser
+  exceptions. Patched JDK 25 with Java 8 API compatibility: all 9 passed.
+- Rebuilt classes were compared with the deployed JAR: 68 of 71 match exactly.
+  Version, MapepireServer and GetVersion differ only in generated/inlined build
+  timestamps, confirmed with javap. No test-only classes are bundled.
+
+Published screenshots and text results
+--------------------------------------
+01-jdk8-tests.jpg: the earlier JDK 8 run, 9 passing tests and BUILD SUCCESS.
+The final clean-package rerun also passed all 9 cases as recorded above.
+
+03-unmeshed-live-result.txt and .jpg: Windows test launcher -> production TLS
+WebSocket handlers -> live Unmeshed JDBC. Initial authentication/query, JDBC
+reconnect/query, fresh WebSocket authentication/query, and trace checks passed.
+The account in this run used an ordinary password. The screenshot's limitations
+refer to that run; later quoted-password/IBM i daemon tests are described below.
+
+04-quoted-password-live-result.txt: a subsequent Windows-launcher run used a
+literal double quote in the account password. The same checks passed. The file's
+PUB400 label was manually supplied and does not establish the tunnel's backend.
+This is evidence of the quoted-password path, not confirmed PUB400 coverage.
+
+06-ibmi-daemon-query.jpg: directly observed VS Code connection Unmeshed_Local,
+with the patched server running on IBM i. The query
+SELECT 1 AS TEST_VALUE FROM SYSIBM.SYSDUMMY1 returned one row, TEST_VALUE=1.
+The tester confirmed use of the quoted-password profile. The tester subsequently
+confirmed VS Code disconnect/reconnect and another successful query, followed by
+stopping/restarting the test daemon, reconnecting VS Code, and a query returning
+1 again. These lifecycle results are manual tester reports, without separate
+restart/reconnect screenshots.
+
+08-ibmi-jar-checksum.png: tester-supplied, unmodified screenshot of
+/QOpenSys/pkgs/bin/sha256sum -c SHA256SUMS.txt returning mapepire-test.jar: OK.
+The local deployment artifact also matches the supplied checksum manifest.
+
+Limits
+------
+Remote Java/JTOpen versions and a controlled same-system before/after daemon
+comparison were not captured. PUB400-specific and native/CLI/Kerberos coverage
+are not established. This evidence does not claim every connection failure in
+the linked Code for IBM i issues is resolved. No credentials or raw server traces
+are included. CI status belongs to the PR checks, separately from these tests.
